@@ -1,62 +1,113 @@
 import { useState, useEffect } from 'react';
 import Form from './components/Form';
-import Container from './components/Container';
-import commentsApi from './services/comments-api';
+// import Container from './components/Container';
+import commentsApi from './service/comments-api';
 import { v4 as uuidv4 } from 'uuid';
+import { Cached as CachedIcon } from '@material-ui/icons/';
+import { Pagination } from '@material-ui/lab';
+
+import {
+  Grid,
+  Button,
+  List,
+  ListItem,
+  CircularProgress,
+} from '@material-ui/core/';
+
+import { makeStyles } from '@material-ui/core/styles';
+
+const useStyles = makeStyles({
+  button: {
+    marginTop: '15px',
+    marginBottom: '15px',
+  },
+  selectedPage: {
+    fontWeight: 700,
+    color: 'white',
+    backgroundColor: 'orange',
+  },
+});
 
 function App() {
+  const classes = useStyles();
   const [comments, setComments] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    setIsLoading(true);
     const fetchComments = () => {
-      commentsApi.getComments(currentPage).then(({ data }) => {
-        setComments(data);
-      });
+      commentsApi
+        .getComments(currentPage)
+        .then(({ data, countPages, current_page }) => {
+          setComments(data.data);
+          setCurrentPage(current_page);
+          setTotalPages(countPages);
+        })
+        .finally(() => setIsLoading(false));
     };
     fetchComments();
   }, [currentPage]);
 
-  const handlePaginationPages = () => {
+  const handleLoadMoreBtn = () => {
     setCurrentPage(prevPage => prevPage + 1);
+  };
+
+  const handlePaginationPage = (e, page) => {
+    setCurrentPage(page);
   };
 
   const handleFormSubmit = async comment => {
     const newComment = await commentsApi
       .addComment(comment)
       .then(({ config }) => JSON.parse(config.data));
-    // const parsedComments = JSON.parse(newComment);
-
-    // console.log(parsedComments);
     setComments([newComment, ...comments]);
   };
 
   return (
-    <Container>
+    <Grid
+      container
+      direction="column"
+      justifyContent="center"
+      alignItems="center"
+    >
       <Form onSubmit={handleFormSubmit} />
-      <ul className="data-list">
-        {comments.map(({ name, text, id }) => (
-          <li key={uuidv4()}>
+      <List className="data-list">
+        {comments.map(({ name, text }) => (
+          <ListItem key={uuidv4()}>
             <span className="data-list__name">Имя: {name}</span>
             <span className="data-list__comment"></span> Комментарий:
             {text}
-          </li>
+          </ListItem>
         ))}
-      </ul>
-      (
+      </List>
       {comments && (
-        <button type="button" onClick={handlePaginationPages}>
-          show more
-        </button>
+        <Button
+          size="medium"
+          type="submit"
+          variant="outlined"
+          color="primary"
+          className={classes.button}
+          aria-label="load more"
+          endIcon={<CachedIcon>send</CachedIcon>}
+          onClick={handleLoadMoreBtn}
+        >
+          Load more
+        </Button>
       )}
-      )
-    </Container>
+      {isLoading && <CircularProgress />}
+      <Pagination
+        count={totalPages}
+        page={currentPage}
+        onChange={handlePaginationPage}
+        color="primary"
+        size="large"
+        siblingCount={2}
+      />
+      ;
+    </Grid>
   );
 }
 
 export default App;
-
-//  const newComment = await axios
-//    .post(URL, comment)
-//    .then(data => JSON.parse(data.config.data));
-//  console.log(newComment);
