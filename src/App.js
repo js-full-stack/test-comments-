@@ -28,7 +28,9 @@ const useStyles = makeStyles({
   contentWrap: {
     backgroundColor: 'rgba(150, 147, 245, 0.5)',
     padding: '10px',
-    width: '400px',
+    width: '550px',
+    wordWrap: 'break-word',
+
     '&:last-child': {
       padding: '10px',
     },
