@@ -26,10 +26,10 @@ const useStyles = makeStyles({
   },
 
   contentWrap: {
-    backgroundColor: 'rgba(150, 147, 245, 0.5)',
     padding: '10px',
     width: '550px',
     wordWrap: 'break-word',
+    backgroundColor: 'rgba(150, 147, 245, 0.5)',
 
     '&:last-child': {
       padding: '10px',
