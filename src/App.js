@@ -26,12 +26,17 @@ const useStyles = makeStyles({
   },
 
   contentWrap: {
-    backgroundColor: 'rgba(150, 115, 245, 1)',
+    backgroundColor: 'rgba(150, 147, 245, 0.5)',
     padding: '10px',
-    width: '1200px',
+    width: '400px',
     '&:last-child': {
       padding: '10px',
     },
+  },
+
+  dataList: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
   },
 
   pagination: {
@@ -64,15 +69,17 @@ function App() {
 
         .finally(() => {
           setIsLoading(false);
-          window.scrollTo({
-            top: document.documentElement.scrollHeight,
-            behavior: 'smooth',
-          });
+
+          currentPage > 1 &&
+            window.scrollTo({
+              top: document.documentElement.scrollHeight,
+              behavior: 'smooth',
+            });
         });
     };
 
     fetchComments();
-  }, [currentPage]);
+  }, [currentPage, totalPages]);
 
   const handleFormSubmit = async comment => {
     const newComment = await commentsApi
@@ -97,6 +104,7 @@ function App() {
         prevComments => prevComments.splice(0, prevComments.length),
         comments,
       );
+      console.log(e);
     }
   };
 
@@ -107,7 +115,7 @@ function App() {
       {!isLoading && (
         <List className={classes.dataList}>
           {comments.map(({ name, text }) => (
-            <ListItem className={classes.dataListItem} key={uuidv4()}>
+            <ListItem key={uuidv4()}>
               <Card>
                 <CardContent className={classes.contentWrap}>
                   Name: {name}
