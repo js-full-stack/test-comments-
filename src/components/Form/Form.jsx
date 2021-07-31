@@ -5,16 +5,19 @@ import { makeStyles } from '@material-ui/core/styles';
 import { TextField, InputLabel } from '@material-ui/core/';
 
 const useStyles = makeStyles({
-  button: {
-    marginBottom: '10px',
-    width: '120px',
-  },
   form: {
-    marginTop: '20px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'start',
+    marginTop: '30px',
   },
   input: {
     marginBottom: '15px',
-    width: '300px',
+    width: '320px',
+  },
+  button: {
+    marginBottom: '10px',
+    width: '120px',
   },
 });
 
@@ -51,7 +54,7 @@ const Form = ({ onSubmit }) => {
           name="name"
           className={classes.input}
           required
-          placeholder="Введите имя"
+          placeholder="Input you name"
           label="Name"
           aria-labelledby="user name"
           variant="outlined"
@@ -68,7 +71,7 @@ const Form = ({ onSubmit }) => {
           className={classes.input}
           value={text}
           required
-          placeholder="Оставьте комментарий"
+          placeholder="Input your comment"
           id="outlined-multiline-static"
           label="Comment"
           aria-labelledby="user comment"

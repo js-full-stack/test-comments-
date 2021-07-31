@@ -5,17 +5,17 @@ import commentsApi from './service/comments-api';
 import { v4 as uuidv4 } from 'uuid';
 import { Cached as CachedIcon } from '@material-ui/icons/';
 import { Pagination } from '@material-ui/lab';
+import Container from './components/Container';
 import {
-  Grid,
-  Container,
   Button,
-  Card,
-  CardContent,
   List,
   ListItem,
   CircularProgress,
-  ListItemAvatar,
+  Card,
+  CardContent,
 } from '@material-ui/core/';
+import { ToastContainer, toast, Zoom } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
 
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -24,26 +24,16 @@ const useStyles = makeStyles({
     marginTop: '15px',
     marginBottom: '40px',
   },
-  selectedPage: {
-    fontWeight: 700,
-    color: 'white',
-    backgroundColor: 'orange',
+
+  contentWrap: {
+    backgroundColor: 'rgba(150, 115, 245, 1)',
+    padding: '10px',
+    width: '1200px',
+    '&:last-child': {
+      padding: '10px',
+    },
   },
-  spinnerWrapper: {
-    height: '25px',
-    marginTop: '25px',
-    marginBottom: '25px',
-  },
-  userName: {
-    marginLeft: '15px',
-    marginRight: '15px',
-  },
-  userComment: {
-    marginRight: '20px',
-  },
-  dataListItem: {
-    width: 'inherit',
-  },
+
   pagination: {
     marginBottom: '60px',
   },
@@ -62,24 +52,27 @@ function App() {
       commentsApi
         .getComments(currentPage)
         .then(({ data, current_page, last_page }) => {
-          setComments(data.data);
           setCurrentPage(current_page);
           setTotalPages(last_page);
+          setComments(prevComments => [...prevComments, ...data.data]);
+
+          currentPage === totalPages &&
+            toast.info(
+              'Oops ... Pages run out. There is nowhere to scroll further',
+            );
         })
-        .finally(() => setIsLoading(false));
+
+        .finally(() => {
+          setIsLoading(false);
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: 'smooth',
+          });
+        });
     };
+
     fetchComments();
   }, [currentPage]);
-
-  const handleLoadMoreBtn = () => {
-    setCurrentPage(prevPage => {
-      return isLoading ? currentPage : prevPage + 1;
-    });
-  };
-
-  const handlePaginationPage = (e, page) => {
-    return isLoading ? currentPage : setCurrentPage(page);
-  };
 
   const handleFormSubmit = async comment => {
     const newComment = await commentsApi
@@ -88,65 +81,76 @@ function App() {
     setComments([newComment, ...comments]);
   };
 
+  const handleLoadMoreBtn = () => {
+    setCurrentPage(prevPage => {
+      return isLoading ? currentPage : prevPage + 1;
+    });
+  };
+
+  const handlePaginationPage = (e, page) => {
+    if (isLoading) {
+      return setCurrentPage(currentPage);
+    }
+    setCurrentPage(page);
+    if (comments.length) {
+      setComments(
+        prevComments => prevComments.splice(0, prevComments.length),
+        comments,
+      );
+    }
+  };
+
   return (
-    <>
-      <Container fixed>
-        <Grid
-          container
-          justifyContent="center"
-          alignItems="center"
-          direction="column"
+    <Container>
+      <Form onSubmit={handleFormSubmit} />
+
+      {!isLoading && (
+        <List className={classes.dataList}>
+          {comments.map(({ name, text }) => (
+            <ListItem className={classes.dataListItem} key={uuidv4()}>
+              <Card>
+                <CardContent className={classes.contentWrap}>
+                  Name: {name}
+                </CardContent>
+                <CardContent className={classes.contentWrap}>
+                  Comment: {text}
+                </CardContent>
+              </Card>
+            </ListItem>
+          ))}
+        </List>
+      )}
+
+      {isLoading && <CircularProgress />}
+
+      {!isLoading && currentPage !== totalPages && (
+        <Button
+          size="medium"
+          type="submit"
+          variant="outlined"
+          color="primary"
+          className={classes.button}
+          aria-label="load more"
+          endIcon={<CachedIcon>send</CachedIcon>}
+          onClick={handleLoadMoreBtn}
         >
-          <Form onSubmit={handleFormSubmit} />
-          <Grid container alignItems="center" justifyContent="left">
-            <Container fixed className={classes.commentsContainer}>
-              <List className={classes.dataList}>
-                {comments.map(({ name, text }) => (
-                  <>
-                    <ListItem className={classes.dataListItem} key={uuidv4()}>
-                      Имя: <span className={classes.userName}> {name}</span>
-                    </ListItem>
-                    <ListItem className={classes.dataListItem} key={uuidv4()}>
-                      <span className={classes.userComment}>
-                        Комментарий: {text}
-                      </span>
-                    </ListItem>
-                  </>
-                ))}
-              </List>
-            </Container>
-          </Grid>
-          <div className={classes.spinnerWrapper}>
-            {isLoading && <CircularProgress />}
-          </div>
+          Load more
+        </Button>
+      )}
 
-          {currentPage !== totalPages && (
-            <Button
-              size="medium"
-              type="submit"
-              variant="outlined"
-              color="primary"
-              className={classes.button}
-              aria-label="load more"
-              endIcon={<CachedIcon>send</CachedIcon>}
-              onClick={handleLoadMoreBtn}
-            >
-              Load more
-            </Button>
-          )}
-
-          <Pagination
-            className={classes.pagination}
-            count={totalPages}
-            page={currentPage}
-            onChange={handlePaginationPage}
-            color="primary"
-            size="large"
-            siblingCount={2}
-          />
-        </Grid>
-      </Container>
-    </>
+      {!isLoading && (
+        <Pagination
+          className={classes.pagination}
+          count={totalPages}
+          page={currentPage}
+          onChange={handlePaginationPage}
+          color="primary"
+          size="large"
+          siblingCount={2}
+        />
+      )}
+      <ToastContainer autoClose={4000} transition={Zoom} />
+    </Container>
   );
 }
 
