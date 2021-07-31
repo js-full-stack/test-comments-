@@ -42,7 +42,10 @@ const useStyles = makeStyles({
     marginRight: '20px',
   },
   dataListItem: {
-    width: '400px',
+    width: 'inherit',
+  },
+  pagination: {
+    marginBottom: '60px',
   },
 });
 
@@ -75,7 +78,7 @@ function App() {
   };
 
   const handlePaginationPage = (e, page) => {
-    setCurrentPage(page);
+    return isLoading ? currentPage : setCurrentPage(page);
   };
 
   const handleFormSubmit = async comment => {
@@ -95,20 +98,24 @@ function App() {
           direction="column"
         >
           <Form onSubmit={handleFormSubmit} />
-          <List className={classes.dataList}>
-            {comments.map(({ name, text }) => (
-              <>
-                <ListItem className={classes.dataListItem} key={uuidv4()}>
-                  Имя: <span className={classes.userName}> {name}</span>
-                </ListItem>
-                <ListItem className={classes.dataListItem} key={uuidv4()}>
-                  <span className={classes.userComment}>
-                    Комментарий: {text}
-                  </span>
-                </ListItem>
-              </>
-            ))}
-          </List>
+          <Grid container alignItems="center" justifyContent="left">
+            <Container fixed className={classes.commentsContainer}>
+              <List className={classes.dataList}>
+                {comments.map(({ name, text }) => (
+                  <>
+                    <ListItem className={classes.dataListItem} key={uuidv4()}>
+                      Имя: <span className={classes.userName}> {name}</span>
+                    </ListItem>
+                    <ListItem className={classes.dataListItem} key={uuidv4()}>
+                      <span className={classes.userComment}>
+                        Комментарий: {text}
+                      </span>
+                    </ListItem>
+                  </>
+                ))}
+              </List>
+            </Container>
+          </Grid>
           <div className={classes.spinnerWrapper}>
             {isLoading && <CircularProgress />}
           </div>
