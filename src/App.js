@@ -96,8 +96,7 @@ function App() {
 
     // * Обнуление стейта и добавление данных с выбранной страницы
     if (comments.length) {
-      setCurrentPage(page);
-      setComments([]);
+     setComments([]);
     }
   };
 
