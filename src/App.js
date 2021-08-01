@@ -3,7 +3,7 @@ import Form from './components/Form';
 // import Container from './components/Container';
 import commentsApi from './service/comments-api';
 import { v4 as uuidv4 } from 'uuid';
-import { Cached as CachedIcon } from '@material-ui/icons/';
+import { Cached as CachedIcon, InsertCommentSharp } from '@material-ui/icons/';
 import { Pagination } from '@material-ui/lab';
 import Container from './components/Container';
 import {
@@ -14,8 +14,6 @@ import {
   Card,
   CardContent,
 } from '@material-ui/core/';
-import { ToastContainer, toast, Zoom } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.min.css';
 
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -50,6 +48,8 @@ function App() {
 
   useEffect(() => {
     setIsLoading(true);
+
+    // *Запись данных из API в стейт
     const fetchComments = () => {
       commentsApi
         .getComments(currentPage)
@@ -57,16 +57,8 @@ function App() {
           setCurrentPage(current_page);
           setTotalPages(last_page);
           setComments(prevComments => {
-            if (comments.length === 0) {
-              return [...data.data];
-            }
             return [...prevComments, ...data.data];
           });
-
-          currentPage === totalPages &&
-            toast.info(
-              'Oops ... Pages run out. There is nowhere to scroll further',
-            );
         })
 
         .finally(() => {
@@ -81,8 +73,9 @@ function App() {
     };
 
     fetchComments();
-  }, [currentPage, totalPages]);
+  }, [currentPage]);
 
+  // * Отправка POST-запроса через форму
   const handleFormSubmit = async comment => {
     const newComment = await commentsApi
       .addComment(comment)
@@ -90,22 +83,25 @@ function App() {
     setComments([newComment, ...comments]);
   };
 
+  // * Подгрузка следующей порции комментариев на страницу
   const handleLoadMoreBtn = () => {
     setCurrentPage(prevPage => {
       return isLoading ? currentPage : prevPage + 1;
     });
   };
 
-  const handlePaginationPage = (e, page) => {
+  // * Загрузка  страницы с данными по выбранной в пагинации странице
+  const handlePaginationPage = async (e, page) => {
     if (isLoading) {
       return setCurrentPage(currentPage);
     }
     setCurrentPage(page);
+    console.log('page: ', page);
+    console.log('comments:', comments);
+
+    // * Обнуление стейта через splice (чтобы данные не подгружались поверх предыдущих)
     if (comments.length) {
-      setComments(
-        prevComments => prevComments.splice(0, prevComments.length),
-        comments,
-      );
+      setComments(prevComments => prevComments.splice(0, prevComments.length));
     }
   };
 
@@ -158,7 +154,6 @@ function App() {
           siblingCount={2}
         />
       )}
-      <ToastContainer autoClose={4000} transition={Zoom} />
     </Container>
   );
 }

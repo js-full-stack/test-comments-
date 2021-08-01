@@ -8,7 +8,6 @@ const getComments = async (currentPage = 1) => {
   try {
     const { data } = await axios.get(paginationUrl);
     const { current_page, last_page } = data;
-    // const countPages = Math.ceil(total / per_page);
     return { data, last_page, current_page };
   } catch (error) {
     console.log(error);
