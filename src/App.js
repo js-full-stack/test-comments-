@@ -26,14 +26,9 @@ const useStyles = makeStyles({
   },
 
   contentWrap: {
-    padding: '10px',
     width: '550px',
     wordWrap: 'break-word',
     backgroundColor: 'rgba(150, 147, 245, 0.5)',
-
-    '&:last-child': {
-      padding: '10px',
-    },
   },
 
   dataList: {
@@ -61,7 +56,12 @@ function App() {
         .then(({ data, current_page, last_page }) => {
           setCurrentPage(current_page);
           setTotalPages(last_page);
-          setComments(prevComments => [...prevComments, ...data.data]);
+          setComments(prevComments => {
+            if (comments.length === 0) {
+              return [...data.data];
+            }
+            return [...prevComments, ...data.data];
+          });
 
           currentPage === totalPages &&
             toast.info(
@@ -106,7 +106,6 @@ function App() {
         prevComments => prevComments.splice(0, prevComments.length),
         comments,
       );
-      console.log(e);
     }
   };
 
