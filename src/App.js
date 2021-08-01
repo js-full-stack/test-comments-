@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import Form from './components/Form';
-// import Container from './components/Container';
 import commentsApi from './service/comments-api';
 import { v4 as uuidv4 } from 'uuid';
-import { Cached as CachedIcon, InsertCommentSharp } from '@material-ui/icons/';
+import { Cached as CachedIcon } from '@material-ui/icons/';
 import { Pagination } from '@material-ui/lab';
 import Container from './components/Container';
 import {
@@ -40,39 +39,37 @@ const useStyles = makeStyles({
 });
 
 function App() {
-  const classes = useStyles();
   const [comments, setComments] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
+  const classes = useStyles();
+
   useEffect(() => {
     setIsLoading(true);
 
     // *Запись данных из API в стейт
-    const fetchComments = () => {
-      commentsApi
-        .getComments(currentPage)
-        .then(({ data, current_page, last_page }) => {
-          setCurrentPage(current_page);
-          setTotalPages(last_page);
-          setComments(prevComments => {
-            return [...prevComments, ...data.data];
-          });
-        })
 
-        .finally(() => {
-          setIsLoading(false);
-
-          currentPage > 1 &&
-            window.scrollTo({
-              top: document.documentElement.scrollHeight,
-              behavior: 'smooth',
-            });
+    commentsApi
+      .getComments(currentPage)
+      .then(({ data, current_page, last_page }) => {
+        setCurrentPage(current_page);
+        setTotalPages(last_page);
+        setComments(prevComments => {
+          return [...prevComments, ...data.data];
         });
-    };
+      })
 
-    fetchComments();
+      .finally(() => {
+        setIsLoading(false);
+
+        currentPage > 1 &&
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: 'smooth',
+          });
+      });
   }, [currentPage]);
 
   // * Отправка POST-запроса через форму
@@ -83,25 +80,24 @@ function App() {
     setComments([newComment, ...comments]);
   };
 
-  // * Подгрузка следующей порции комментариев на страницу
+  // * Подгрузка следующей порции комментариев на страницу при клике на кнопку LOAD MORE
   const handleLoadMoreBtn = () => {
     setCurrentPage(prevPage => {
       return isLoading ? currentPage : prevPage + 1;
     });
   };
 
-  // * Загрузка  страницы с данными по выбранной в пагинации странице
-  const handlePaginationPage = async (e, page) => {
+  // * Загрузка  данных по выбранной в пагинации странице
+  const handlePaginationPage = (e, page) => {
     if (isLoading) {
       return setCurrentPage(currentPage);
     }
     setCurrentPage(page);
-    console.log('page: ', page);
-    console.log('comments:', comments);
 
-    // * Обнуление стейта через splice (чтобы данные не подгружались поверх предыдущих)
+    // * Обнуление стейта и добавление данных с выбранной страницы
     if (comments.length) {
-      setComments(prevComments => prevComments.splice(0, prevComments.length));
+      setCurrentPage(page);
+      setComments([]);
     }
   };
 
@@ -109,22 +105,20 @@ function App() {
     <Container>
       <Form onSubmit={handleFormSubmit} />
 
-      {!isLoading && (
-        <List className={classes.dataList}>
-          {comments.map(({ name, text }) => (
-            <ListItem key={uuidv4()}>
-              <Card>
-                <CardContent className={classes.contentWrap}>
-                  Name: {name}
-                </CardContent>
-                <CardContent className={classes.contentWrap}>
-                  Comment: {text}
-                </CardContent>
-              </Card>
-            </ListItem>
-          ))}
-        </List>
-      )}
+      <List className={classes.dataList}>
+        {comments.map(({ name, text }) => (
+          <ListItem key={uuidv4()}>
+            <Card>
+              <CardContent className={classes.contentWrap}>
+                Name: {name}
+              </CardContent>
+              <CardContent className={classes.contentWrap}>
+                Comment: {text}
+              </CardContent>
+            </Card>
+          </ListItem>
+        ))}
+      </List>
 
       {isLoading && <CircularProgress />}
 
