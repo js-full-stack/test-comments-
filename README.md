@@ -18,3 +18,6 @@ POST https://jordan.ashton.fashion/api/goods/30/comments
 Отправка данных в формате JSON
 В качестве базы для приложения использовать create-react-app
 Важно: реализация на React
+
+## Результат: 
+https://lpj-netlify-test-tack-webhome.netlify.app/
